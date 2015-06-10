@@ -12,7 +12,6 @@ MERCHANTABLITY OR NON-INFRINGEMENT.
 See the Apache Version 2.0 License for specific language governing permissions
 and limitations under the License.
 ***************************************************************************** */
-
 declare module "typescript" {
     interface Map<T> {
         [index: string]: T;
