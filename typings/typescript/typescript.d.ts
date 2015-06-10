@@ -846,7 +846,7 @@ declare module "typescript" {
     }
     interface SourceFile extends Declaration {
         statements: NodeArray<ModuleElement>;
-        externalModuleIndicator: boolean;
+        externalModuleIndicator: Node;
         endOfFileToken: Node;
         fileName: string;
         text: string;
