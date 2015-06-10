@@ -1,4 +1,4 @@
-/// <reference path="./typings/tsd" />
+/// <reference path="typings/tsd.d.ts" />
 
 import fs = require('fs');
 import glob = require('glob');
@@ -8,7 +8,7 @@ import pathUtil = require('path');
 import Promise = require('bluebird');
 import ts = require('typescript');
 
-interface Options {
+export interface Options {
 	baseDir: string;
 	files: string[];
 	excludes?: string[];
@@ -19,7 +19,8 @@ interface Options {
 	main?: string;
 	name: string;
 	out: string;
-	target?: ts.ScriptTarget;
+    target?: ts.ScriptTarget;
+    module?: ts.ModuleKind;
 }
 
 var filenameToMid:(filename: string) => string = (function () {
@@ -103,23 +104,36 @@ export function generate(options: Options, sendMessage: (message: string) => voi
 	var indent = options.indent === undefined ? '\t' : options.indent;
 	var target = options.target || ts.ScriptTarget.Latest;
 	var compilerOptions: ts.CompilerOptions = {
-		declaration: true,
-		module: ts.ModuleKind.CommonJS,
+        declaration: true,
+        module: options.module,
 		target: target
 	};
 
 	var filenames = getFilenames(baseDir, options.files);
 	var excludesMap: { [filename: string]: boolean; } = {};
 	options.excludes && options.excludes.forEach(function (filename) {
-		excludesMap[pathUtil.resolve(baseDir, filename)] = true;
+        excludesMap[filenameToMid(pathUtil.resolve(baseDir, filename))] = true;
 	});
 
 	mkdirp.sync(pathUtil.dirname(options.out));
 	var output = fs.createWriteStream(options.out, { mode: parseInt('644', 8) });
 
 	var host = ts.createCompilerHost(compilerOptions);
-	var program = ts.createProgram(filenames, compilerOptions, host);
-	var checker = ts.createTypeChecker(program, true);
+    var program = ts.createProgram(filenames, compilerOptions, host);
+    var emitResult = program.emit();
+    var allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
+    allDiagnostics.forEach(diagnostic => {
+        var message = '';
+        if (diagnostic.file) {
+            var { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+            message += `${diagnostic.file.fileName} (${line + 1},${character + 1}): `;
+        }
+        message += ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
+        console.log(message);
+    });
+    if (emitResult.emitSkipped) {
+        return Promise.reject(new Error("Source file contained errors"));
+    }
 
 	function writeFile(filename: string, data: string, writeByteOrderMark: boolean) {
 		// Compiler is emitting the non-declaration file, which we do not care about
@@ -212,7 +226,7 @@ export function generate(options: Options, sendMessage: (message: string) => voi
 					node.kind === ts.SyntaxKind.StringLiteral &&
 					(node.parent.kind === ts.SyntaxKind.ExportDeclaration || node.parent.kind === ts.SyntaxKind.ImportDeclaration)
 				) {
-					var text = (<ts.StringLiteralTypeNode> node).text;
+                    var text = node.getText();
 					if (text.charAt(0) === '.') {
 						return ` '${filenameToMid(pathUtil.join(pathUtil.dirname(sourceModuleId), text))}'`;
 					}
