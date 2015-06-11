@@ -85,7 +85,7 @@ function generate(options, sendMessage) {
     var output = fs.createWriteStream(options.out, { mode: parseInt('644', 8) });
     var host = ts.createCompilerHost(compilerOptions);
     var program = ts.createProgram(filenames, compilerOptions, host);
-    var emitResult = program.emit();
+    var emitResult = program.emit(undefined, function () { });
     var allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
     allDiagnostics.forEach(function (diagnostic) {
         var message = '';

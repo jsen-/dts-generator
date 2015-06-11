@@ -120,7 +120,7 @@ export function generate(options: Options, sendMessage: (message: string) => voi
 
 	var host = ts.createCompilerHost(compilerOptions);
     var program = ts.createProgram(filenames, compilerOptions, host);
-    var emitResult = program.emit();
+    var emitResult = program.emit(undefined, ()=>{});
     var allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
     allDiagnostics.forEach(diagnostic => {
         var message = '';
