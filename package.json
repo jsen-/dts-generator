@@ -17,7 +17,7 @@
     "bluebird": "^2.9.27",
     "glob": "^5.0.10",
     "mkdirp": "^0.5.1",
-    "typescript-bin": "https://github.com/jsen-/TypeScript-bin/tarball/master"
+    "typescript": "https://github.com/jsen-/TypeScript/tarball/master"
   },
   "devDependencies": {
     "tsd": "0.5.7"
