@@ -19,9 +19,6 @@
     "mkdirp": "^0.5.1",
     "typescript": "https://github.com/jsen-/TypeScript/tarball/master"
   },
-  "devDependencies": {
-    "tsd": "0.5.7"
-  },
   "scripts": {
     "prepublish": "tsc -m commonjs -t es5 typings/tsd.d.ts index.ts bin/dts-generator.ts"
   }
