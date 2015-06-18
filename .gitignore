@@ -1,2 +1,6 @@
+bin/
+obj/
+*.njsproj
+
 node_modules
 !tasks/*.js
